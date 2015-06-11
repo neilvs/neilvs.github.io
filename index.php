@@ -4,7 +4,7 @@
 	<meta charset="UTF-8" />
 	<link rel="manifest" href="manifest.json">
   <!--Import materialize.css-->
-  	<link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+  	<link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection" data-noprefix/>
   	<link type="text/css" rel="stylesheet" href="css/main.css"  media="screen,projection"/>
   <!--Let browser know website is optimized for mobile-->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
@@ -36,69 +36,97 @@
 		
 		<div class="fixed-action-btn" style="bottom: 45px; right: 24px;">
 		    <a class="btn-floating btn-large red">
-		      <i class="large mdi-editor-mode-edit"></i>
+		      <i class="mdi-image-add-to-photos"></i>
 		    </a>
 		    <ul>
-		      <li><a class="btn-floating red"><i class="large mdi-editor-insert-chart"></i></a></li>
-		      <li><a class="btn-floating yellow darken-1"><i class="large mdi-editor-format-quote"></i></a></li>
-		      <li><a class="btn-floating green"><i class="large mdi-editor-publish"></i></a></li>
-		      <li><a class="btn-floating blue"><i class="large mdi-editor-attach-file"></i></a></li>
+		      <li onclick="$('#fileToUpload').trigger('click');">
+		      	<a class="btn-floating green"><i class="large mdi-image-camera-alt"></i></a>
+		      </li>
 		    </ul>
   		</div>
+		
 		
 		<button class="js-push-button">
 			Enable notifications
 		</button>
 		<p id="console"></p>
-		<div class="card">
-	        <div onclick="Materialize.showStaggeredList('#comments')" class="card-image waves-effect waves-block waves-light">
-	          <img class="activator" src="img/traffic.jpg">
-	        </div>
-	        <div class="card-content">
-	          <span class="card-title activator grey-text text-darken-4">Eskom Issues <i class="mdi-navigation-more-vert right"></i></span>
-	          <p>What happens when there is a power out</p>
-	        </div>
-	        <div class="card-reveal">
-	          <span class="card-title grey-text text-darken-4">Eskom Issues <i class="mdi-navigation-close right"></i></span>
-	          <ul class="staggered_list" id='comments'>
-	          	<li>
-	          		Comment 1
-	          	</li>
-	          	<li>
-	          		Comment 2
-	          	</li>
-	          	<li>
-	          		Comment 1
-	          	</li>
-	          	<li>
-	          		Comment 2
-	          	</li>
-	          	<li>
-	          		Comment 1
-	          	</li>
-	          	<li>
-	          		Comment 2
-	          	</li>
-	          </ul>
-	        </div>
-      	</div>
 		
-		<div class="card">
-	        <div class="card-image waves-effect waves-block waves-light effect">
-	          <img class="activator" src="img/hipster.jpg">
-	          <img class="activator filtre--r" src="img/hipster.jpg">
-	        </div>
-	        <div class="card-content">
-	          <span class="card-title activator grey-text text-darken-4">Hipster High <i class="mdi-navigation-more-vert right"></i></span>
-	          <p>What will become of us???</p>
-	        </div>
-	        <div class="card-reveal">
-	          <span class="card-title grey-text text-darken-4">Card Title <i class="mdi-navigation-close right"></i></span>
-	          <p>Here is some more information about this product that is only revealed once clicked on.</p>
-	        </div>
-      	</div>
 		
-		<br><br><br><br>
+		<div class="card add_card">
+        	<div class="card-image">
+            	<canvas id="PhotoEdit"></canvas>
+              	<p contenteditable="true" class="card-title">Title</p>
+              	<button class="image_button" id="sharpen_button" onclick="sharpen(0.25)">HDR</button>
+              	<button class="image_button" id="restore_button" onclick="restore_canvas()">Restore</button>
+            </div>
+            <div class="card-content">
+            	<p contenteditable="true">Description</p>
+            	<div id="post_button">
+            		
+            		<span  class="btn btn-primary" onclick="uploadFile()">Post</span>
+            	</div>
+            	
+            </div>
+            <div id="add_cover_holder">
+            	<div class="add_card_cover">
+	            	<div class="loader"></div>
+	            </div>
+            </div>
+            
+            
+        </div>
+		
+		<div class="main_cards">
+			
+			<?php
+			$link = mysqli_connect('localhost', '', '', 'test');
+			$query = "SELECT * FROM imager ORDER BY id DESC LIMIT 20";
+			$result = mysqli_query($link, $query);
+			while ($r = mysqli_fetch_assoc($result)){
+				$id = $r['id'];	
+				$image = $r['image'];
+				$title = $r['title'];
+				$description = $r['description'];
+				?>
+				<div class="card" data-id='<?php echo $id; ?>'>
+	            	<div class="card-image">
+	              		<img src="<?php echo $image; ?>" >
+	              		<span class="card-title"><?php echo $title; ?></span>
+	            	</div>
+	            	<div class="card-content">
+	              		<p>
+	              			<?php echo $description; ?>
+	              		</p>
+	            	</div>
+	          	</div>
+				<?php
+			}
+			?>
+				
+			<br><br><br><br>
+		</div>
+		
+		
+		<!--- Hidden Elemets ------------------>
+		 
+		<form id="form1" enctype="multipart/form-data" method="post" action="savetofile.php">
+		 	 <input type="file" name="fileToUpload" id="fileToUpload" onchange="fileSelected();" accept="image/*" />
+		     <input type="button" onclick="uploadFile()" value="Upload" />
+		 	<div id="details"></div>
+		    <div id="progress"></div>
+		</form>
+		
+		<div class="card skeleton">
+	    	<div class="card-image">
+	      		<img src="">
+	      		<span class="card-title"></span>
+	    	</div>
+	    	<div class="card-content">
+	      		<p>
+	      			
+	      		</p>
+	    	</div>
+	  	</div>
 		
 		
 	</div>
@@ -107,34 +135,107 @@
   <!--Import jQuery before materialize.js-->
   <script type="text/javascript" src="js/jquery-2.1.1.js"></script>
   <script type="text/javascript" src="js/materialize.min.js"></script>
+  <script src="js/exif2.js" type="text/javascript"></script>
+  <script src="js/hammer.js" type="text/javascript"></script>
+  <script src="js/prefixfree.min.js"></script>
+  <script type="text/javascript" src="js/main.js"></script>
   <script>
-  
+  	
+  	  	
+	var myElement = document.getElementById('PhotoEdit');
+	var hammertime = new Hammer(myElement);
+	hammertime.on('pan', function(ev) {
+    	
+    	//console.log(ev);
+    	
+    	if (ev.direction == 4){
+    		//console.log(ev.deltaX);
+    		change = ev.deltaX / canvas.width;
+    		//console.log('change value', change);
+    		brightness(change);
+    	}
+    	if (ev.direction == 2){
+    		//console.log(ev.deltaX);
+    		change = ev.deltaX / canvas.width;
+    		//console.log('change value', change);
+    		brightness(change);
+    	}
+    	
+	});
+  	
+  	
+  	  	
+  	
+  	
+  	$(document).on('focus','.add_card .card-title',function(){
+  		//check if still default title
+  		if ( $(this).text().trim() == 'Title' ){
+  			$(this).text('');
+  		}
+  		$(this).removeClass('complete');
+  	});
+  	$(document).on('focus','.add_card .card-content p',function(){
+  		if ( $(this).text().trim() == 'Description' ){
+  			$(this).text('');
+  		}
+  	});	
+  	
+  	$(document).on('blur','.add_card .card-title',function(){
+  		//check if still default title
+  		if ( $(this).text().trim() == '' || $(this).text().trim() == 'Title' ){
+  			$(this).text('Title').removeClass('complete');
+  		} else {
+  			$('.add_card .card-title').addClass('complete');
+  		}
+  		
+  	});
+  	
+  	$(document).on('blur','.add_card .card-content p',function(){
+  		if ( $(this).text().trim() == '' || $(this).text().trim() == 'Description' ){
+  			$(this).text('Description');
+  		}
+  		
+  		
+  	});	
+  	
+  	$(document).on('keyup','.add_card .card-title, .add_card .card-content p',function(){
+  		check_new_card_complete();
+  	});
+  	
+  	
+  	
+  	
+  	
+  	
+  	
+  	
+  	
+  	// ---------      PUSH NOTIFICATIONS    -----------------------------
+  	
+  	
   	var isPushEnabled = false;
-
+	
+	
+	if ('serviceWorker' in navigator) {
+		navigator.serviceWorker.register('sw.js').then(function(registration) {
+				// Registration was successful
+				console.log('ServiceWorker registration successful with scope: ',    registration.scope);
+		}).catch(function(err) {
+				// registration failed :(
+				console.log('ServiceWorker registration failed: ', err);
+		});
+	}
+	
+	
 	window.addEventListener('load', function() {
 		  var pushButton = document.querySelector('.js-push-button'); 
 		  pushButton.addEventListener('click', function() {  
 		    if (isPushEnabled) {  
 		      unsubscribe();  
 		    } else { 
-		       
 		      subscribe();  
 		    }  
 		  });
-		
-		  // Check that service workers are supported, if so, progressively  
-		  // enhance and add push messaging support, otherwise continue without it.  
-		  if ('serviceWorker' in navigator) {
-			  navigator.serviceWorker.register('sw.js').then(function(registration) {
-			    // Registration was successful
-			    console.log('ServiceWorker registration successful with scope: ',    registration.scope);
-			    $('#console').text('ServiceWorker registration successful with scope: ',    registration.scope);
-			  }).catch(function(err) {
-			    // registration failed :(
-			    console.log('ServiceWorker registration failed: ', err);
-			    $('#console').text('ServiceWorker registration failed: '+ err);
-			  });
-			}
 	});
 	
 	
@@ -144,7 +245,7 @@
 	  // Are Notifications supported in the service worker?  
 	  if (!('showNotification' in ServiceWorkerRegistration.prototype)) {  
 	    console.warn('Notifications aren\'t supported.');  
-	    $('#console').text('Notifications aren\'t supported.');
+	   
 	    return;
 	  }
 	
@@ -153,14 +254,14 @@
 	  // user changes the permission  
 	  if (Notification.permission === 'denied') {  
 	    console.warn('The user has blocked notifications.');  
-	    $('#console').text('The user has blocked notifications');
+	    
 	    return;  
 	  }
 	
 	  // Check if push messaging is supported  
 	  if (!('PushManager' in window)) {  
 	    console.warn('Push messaging isn\'t supported.');  
-	    $('#console').text('Push messaging isn\'t supported.');
+	    
 	    return;  
 	  }
 	
@@ -214,7 +315,7 @@
 	        pushButton.disabled = false;   
 	          
 	          console.log('subscription details: ',subscription);
-	          $('#console').text(subscription.subscriptionId);//end
+	          //end
 	        // TODO: Send the subscription.subscriptionId and   
 	        // subscription.endpoint to your server  
 	        // and save it to send a push message at a later date   
@@ -238,21 +339,12 @@
 	        }  
 	      });  
 	  });  
-	}
+	};
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
   	$(function(){
   		$(".button-collapse").sideNav();
-  	})
+  	});
   </script>
 </body>
   </html>
